@@ -15,7 +15,7 @@ const (
 // generateRandomElements generates random elements.
 func generateRandomElements(size int) []int {
 
-	if size <= 1 || size > SIZE {
+	if size <= 0 || size > SIZE {
 		return nil // panic("wrong slice size in generateRandomElements")
 	}
 
@@ -56,7 +56,7 @@ func maxChunks(data []int) int {
 	}
 
 	chunkSize := len(data) / CHUNKS
-	maxChan := make(chan int, CHUNKS)
+	maxInChanks := make([]int, CHUNKS)
 
 	var wg sync.WaitGroup
 
@@ -71,27 +71,13 @@ func maxChunks(data []int) int {
 		go func(start, end int) {
 			defer wg.Done()
 
-			max := data[start]
-			for _, value := range data[start:end] {
-				if value > max {
-					max = value
-				}
-			}
-			maxChan <- max
+			maxInChanks[i] = maximum(data[start:end])
 		}(start, end)
 	}
 
-	go func() {
-		wg.Wait()
-		close(maxChan)
-	}()
+	wg.Wait()
 
-	finalMax := <-maxChan
-	for v := range maxChan {
-		if v > finalMax {
-			finalMax = v
-		}
-	}
+	finalMax := maximum(maxInChanks)
 
 	return finalMax
 }
